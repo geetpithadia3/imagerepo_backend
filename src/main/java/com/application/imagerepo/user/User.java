@@ -1,6 +1,7 @@
 package com.application.imagerepo.user;
 
 import com.application.imagerepo.image.Image;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 
@@ -30,6 +31,7 @@ public class User implements Serializable {
     private String role;
 
     @OneToMany(mappedBy="user")
+    @JsonIgnoreProperties("user")
     private List<Image> images;
 
 

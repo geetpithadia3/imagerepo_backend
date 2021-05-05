@@ -2,6 +2,8 @@ package com.application.imagerepo.transferObjects;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class UserTO {
 
@@ -12,4 +14,6 @@ public class UserTO {
     private String password;
 
     private String email;
+
+    private List<ImageTO> images;
 }

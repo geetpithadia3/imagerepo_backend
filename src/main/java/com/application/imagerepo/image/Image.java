@@ -32,7 +32,7 @@ public class Image implements Serializable {
     private String storageURL;
 
     @Column
-    private Date timstamp;
+    private Date timestamp;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private User user;

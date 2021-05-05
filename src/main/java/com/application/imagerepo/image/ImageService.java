@@ -4,6 +4,9 @@ import com.amazonaws.services.dlm.model.ResourceNotFoundException;
 import com.application.imagerepo.security.jwt.JWTTokenUtil;
 import com.application.imagerepo.transferObjects.ImageFormTO;
 import com.application.imagerepo.transferObjects.ImageTO;
+import com.application.imagerepo.transferObjects.UserTO;
+import com.application.imagerepo.user.User;
+import com.application.imagerepo.user.UserRepository;
 import com.application.imagerepo.utils.Rekognition;
 import com.application.imagerepo.utils.S3;
 import javassist.NotFoundException;
@@ -19,6 +22,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,6 +31,9 @@ public class ImageService {
 
     @Autowired
     ImageRepository imageRepository;
+
+    @Autowired
+    UserRepository userRepository;
 
     @Autowired
     ModelMapper modelMapper;
@@ -40,20 +47,31 @@ public class ImageService {
     @Autowired
     JWTTokenUtil jwtTokenUtil;
 
-    public void uploadImageToS3AndPersist(ImageFormTO imageForm) throws IOException {
-        File file = new File("src/main/resources/" + imageForm.getImageFile().getOriginalFilename());
+    public Image uploadImageToS3AndPersist(ImageFormTO imageForm, String authorizationHeader) throws IOException {
 
+        Image imageObjectToPersist = modelMapper.map(imageForm, Image.class);
+        //Fetching user details from authorization token
+        String token = authorizationHeader.split(" ")[1].trim();
+        String tokenUserName = jwtTokenUtil.getUsernameFromToken(token);
+        imageObjectToPersist.setUser(userRepository.findByUsername(tokenUserName));
+        imageObjectToPersist.setAccessType(ImageAccessType.PUBLIC.name());
+        imageObjectToPersist.setTimestamp(new Date());
+        // Converting MultipartFile to File
+        File file = new File("src/main/resources/" + imageForm.getImageFile().getOriginalFilename() + "_" + tokenUserName);
         try (OutputStream os = new FileOutputStream(file)) {
             os.write(imageForm.getImageFile().getBytes());
         } catch (IOException e) {
             e.printStackTrace();
         }
-        // Upload Image to S3
-        Image imageObjectToPersist = modelMapper.map(imageForm, Image.class);
+
+        // Fetching labels from AWS Rekognition
         imageObjectToPersist.setTags(String.join(",", rekognitionClient.getImageLabels(file)));
+        // Upload Image to S3
         imageObjectToPersist.setStorageURL(s3Client.uploadFile(file));
-        imageObjectToPersist.setAccessType(ImageAccessType.PUBLIC.toString());
-        imageRepository.save(imageObjectToPersist);
+        file.delete();
+        return imageRepository.save(imageObjectToPersist);
+
+
     }
 
     public List<Image> getImagesByUser(Long userId) {
@@ -64,18 +82,16 @@ public class ImageService {
         return imageRepository.findImagesByAccessType(ImageAccessType.PUBLIC.toString());
     }
 
-    public void authorizaUserAndDeleteImage(Long id, String authorizationHeader) throws Exception {
-        if (StringUtils.hasText(authorizationHeader) && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.split(" ")[1].trim();
-            String tokenUsername = jwtTokenUtil.getUsernameFromToken(token);
-            Optional<Image> image = imageRepository.findById(id);
-            if(!image.isPresent())
-                throw new Exception("Image not found!");
-            if(!image.get().getUser().getUsername().equals(tokenUsername))
-                throw new BadCredentialsException("Not Authorized");
-            s3Client.deleteFile(image.get().getTitle());
-            imageRepository.deleteById(id);
-        }
+    public void authorizeUserAndDeleteImage(Long id, String authorizationHeader) throws Exception {
+
+        String token = authorizationHeader.split(" ")[1].trim();
+        Optional<Image> image = imageRepository.findById(id);
+        if (!image.isPresent())
+            throw new Exception("Image not found!");
+        if (!jwtTokenUtil.isAuthorized(token, modelMapper.map(image.get().getUser(), UserTO.class)))
+            throw new BadCredentialsException("Not Authorized");
+        s3Client.deleteFile(image.get().getTitle() + "_" + image.get().getUser().getUsername());
+        imageRepository.deleteById(id);
 
 
     }

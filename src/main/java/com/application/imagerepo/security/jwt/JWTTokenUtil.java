@@ -1,6 +1,7 @@
 package com.application.imagerepo.security.jwt;
 
 import com.application.imagerepo.security.auth.UserPrinciple;
+import com.application.imagerepo.transferObjects.UserTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,6 +33,11 @@ public class JWTTokenUtil {
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
     }
+
+    public Boolean isAuthorized(String token, UserTO user ){
+        return getUsernameFromToken(token).equals(user.getUsername());
+    }
+
 
     public String getUsernameFromToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
