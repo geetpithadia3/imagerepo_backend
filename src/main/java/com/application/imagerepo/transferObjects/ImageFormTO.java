@@ -10,5 +10,7 @@ public class ImageFormTO {
 
     private String description;
 
+    private String accessType;
+
     private MultipartFile imageFile;
 }

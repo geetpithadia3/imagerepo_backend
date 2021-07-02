@@ -28,11 +28,11 @@ public class Image implements Serializable {
     @Column(nullable = false)
     private String accessType;
 
-    @Column(nullable = true)
-    private String storageURL;
+    @Column(nullable = false)
+    private String storageObjectName;
 
     @Column
-    private Date timstamp;
+    private Date timestamp;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private User user;

@@ -1,8 +1,6 @@
 package com.application.imagerepo.transferObjects;
 
-import com.application.imagerepo.user.User;
 import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
 
 
 import java.io.Serializable;
@@ -19,11 +17,9 @@ public class ImageTO implements Serializable {
 
     private String tags;
 
-    private String storageURL;
+    private String content;
 
-    private Date timstamp;
+    private String accessType;
 
-    private User user;
-
-    private MultipartFile imageFile;
+    private Date timestamp;
 }

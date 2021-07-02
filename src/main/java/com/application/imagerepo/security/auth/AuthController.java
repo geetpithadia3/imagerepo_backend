@@ -38,7 +38,7 @@ public class AuthController {
             Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
 
             return ResponseEntity.ok()
-                    .header(HttpHeaders.AUTHORIZATION, jwtTokenUtil.generateJwtToken(authenticate)).body(modelMapper.map(authenticate.getPrincipal(), AuthResponse.class));
+                    .header(HttpHeaders.AUTHORIZATION, jwtTokenUtil.generateJwtToken(authenticate)).body(modelMapper.map(((UserPrinciple) authenticate.getPrincipal()).getUser(), AuthResponse.class));
         } catch (BadCredentialsException ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
