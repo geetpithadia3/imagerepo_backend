@@ -17,7 +17,9 @@ public class ImageTO implements Serializable {
 
     private String tags;
 
-    private String storageURL;
+    private String content;
+
+    private String accessType;
 
     private Date timestamp;
 }

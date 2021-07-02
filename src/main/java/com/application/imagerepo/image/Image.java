@@ -28,8 +28,8 @@ public class Image implements Serializable {
     @Column(nullable = false)
     private String accessType;
 
-    @Column(nullable = true)
-    private String storageURL;
+    @Column(nullable = false)
+    private String storageObjectName;
 
     @Column
     private Date timestamp;

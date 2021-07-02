@@ -34,9 +34,7 @@ public class JWTTokenUtil {
                 .compact();
     }
 
-    public Boolean isAuthorized(String token, UserTO user ){
-        return getUsernameFromToken(token).equals(user.getUsername());
-    }
+
 
 
     public String getUsernameFromToken(String token) {

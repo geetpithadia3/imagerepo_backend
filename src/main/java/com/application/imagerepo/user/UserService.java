@@ -1,8 +1,10 @@
 package com.application.imagerepo.user;
 
+import com.application.imagerepo.image.Image;
 import com.application.imagerepo.security.jwt.JWTTokenUtil;
 import com.application.imagerepo.transferObjects.ImageTO;
 import com.application.imagerepo.transferObjects.UserTO;
+import com.application.imagerepo.user.views.UserDetailsView;
 import javassist.NotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,16 +52,16 @@ public class UserService {
 
     }
 
-    public List<ImageTO> getUserImages(Long id, String authorizationHeader) throws NotFoundException {
-        Optional<User> user = userRepository.findById(id);
-        if (!user.isPresent())
-            throw new NotFoundException("User not found!");
-        String token = authorizationHeader.split(" ")[1].trim();
-        if (!jwtTokenUtil.isAuthorized(token, modelMapper.map(user.get(), UserTO.class)))
-        throw new BadCredentialsException("Not Authorized");
-
-        return modelMapper.map(user.get(), UserTO.class).getImages();
-
+    public Optional<User> findByUserName(String username){
+        return this.userRepository.findByUsername(username);
     }
+
+    public Optional<UserDetailsView> findUserViewById(Long id){
+        return this.userRepository.findViewById(id);
+    }
+
+
+
+
 
 }

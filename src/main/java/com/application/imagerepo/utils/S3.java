@@ -5,6 +5,7 @@ import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.S3Object;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -22,17 +23,30 @@ public class S3 {
     public String uploadFile(File file) {
         try {
             s3.putObject(bucket_name, file.getName(), file);
-//            AccessControlList acl = s3.getObjectAcl(bucket_name, object_key);
-//            // set access for the grantee
-//            Permission permission = Permission.valueOf("Read");
-//            acl.grantPermission(grantee, permission);
-//            s3.setObjectAcl(bucket_name, object_key, acl);
             return object_url + file.getName();
         } catch (AmazonServiceException e) {
             System.err.println(e.getErrorMessage());
             throw e;
         }
     }
+
+    public S3Object getImage(String name) {
+        try {
+            return s3.getObject(bucket_name, name);
+        } catch (AmazonServiceException e) {
+            System.err.println(e.getErrorMessage());
+            throw e;
+        }
+    }
+    public String getImageString(String name) {
+        try {
+            return s3.getObjectAsString(bucket_name, name);
+        } catch (AmazonServiceException e) {
+            System.err.println(e.getErrorMessage());
+            throw e;
+        }
+    }
+
 
     public void deleteFile(String filename) {
         try {

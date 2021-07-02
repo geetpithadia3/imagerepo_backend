@@ -49,11 +49,22 @@ public class ImageController {
     }
 
     @GetMapping("/image")
-    public ResponseEntity<List<ImageTO>> showAllImages() {
+    public ResponseEntity<List<ImageTO>> showAllPublicImages() {
         try {
             return ResponseEntity.ok().body(imageService.getPublicImages().stream().map(image -> modelMapper.map(image, ImageTO.class)).collect(Collectors.toList()));
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
+    @GetMapping("/image/user/{userId}")
+    public ResponseEntity<List<ImageTO>> showAllUserImages(@RequestHeader(HttpHeaders.AUTHORIZATION) String authorizationHeader, @PathVariable("userId") Long userId) {
+        try {
+            return ResponseEntity.ok().body(imageService.getUserImages(authorizationHeader, userId).stream().map(image -> modelMapper.map(image, ImageTO.class)).collect(Collectors.toList()));
+        } catch (BadCredentialsException | IOException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }
